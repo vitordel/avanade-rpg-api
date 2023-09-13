@@ -18,13 +18,7 @@
 - Banco de Dados Postgres;
 - Necessário criar o CRUD (Create, Read, Update e Delete) de cadastro de Personagem;
 
-Personagens
-Heróis Vida Força Defesa Agilidade
-Quantidade de
-dados
-Faces do dado
-Guerreiro 20 7 5 6 1 12
-Bárbaro 21 10 2 5 2 8
+### Personagens
 
 | Heros     | Life | Strength | Defense | Agility | Number of Dices | Dice Faces | 
 |-----------|------|----------|---------|---------|-----------------|------------|
