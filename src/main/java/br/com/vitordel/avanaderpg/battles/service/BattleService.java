@@ -10,7 +10,7 @@ public interface BattleService {
 
     List<Battle> getAllBattles();
     Battle getBattleById(Long battleId);
-    List<BattleLog> getBattleLogs(Long battleId);
+    List<BattleLog> getBattleLogsByBattleId(Long battleId);
     Battle startBattle(StartBattleDto startBattleDto);
 
     BattleLog createBattleLog(Battle battle);

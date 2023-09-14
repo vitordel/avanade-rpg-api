@@ -1,5 +1,7 @@
 package br.com.vitordel.avanaderpg.battles.controller;
 
+import br.com.vitordel.avanaderpg.battles.dto.BattleDto;
+import br.com.vitordel.avanaderpg.battles.dto.BattleLogDto;
 import br.com.vitordel.avanaderpg.battles.dto.StartBattleDto;
 import br.com.vitordel.avanaderpg.battles.model.Battle;
 import br.com.vitordel.avanaderpg.battles.model.BattleLog;
@@ -26,15 +28,19 @@ public class BattleController {
         return ResponseHandler.generateResponse("Successfully retrieved all battles!", HttpStatus.OK, battles);
     }
 
-    @GetMapping("/history/{battleId}")
-    public ResponseEntity<Object> getBattleLogs(@PathVariable Long battleId) {
+    @GetMapping("/{id}/history")
+    public ResponseEntity<Object> getBattleLogs(@PathVariable Long id) {
 
         try {
-            Battle battle = battleService.getBattleById(battleId);
-//            List<BattleLog> battleLogs = battleService.getBattleLogs(battleId);
-            return ResponseHandler.generateResponse("Successfully retrieved battle logs!", HttpStatus.OK, battle);
-        } catch (EntityNotFoundException e) {
-            String errorMessage = "Character with ID " + battleId + " not found.";
+            List<BattleLog> battleLogs = battleService.getBattleLogsByBattleId(id);
+            List<BattleLogDto> battleLogDtos = battleLogs.stream()
+                    .map(BattleLogDto::new)
+                    .toList();
+
+            return ResponseHandler.generateResponse("Successfully retrieved battle logs!", HttpStatus.OK, battleLogDtos);
+
+        } catch (EntityNotFoundException | IllegalArgumentException e) {
+            String errorMessage = "Character with ID " + id + " not found.";
             return ResponseHandler.generateResponse(errorMessage, HttpStatus.NOT_FOUND, null);
         }
     }
@@ -50,20 +56,22 @@ public class BattleController {
             Battle battle = battleService.startBattle(startBattleDto);
             battleService.createBattleLog(battle);
 
-            return ResponseHandler.generateResponse("Successfully started a battle!", HttpStatus.CREATED, battle);
+            BattleDto battleDto = new BattleDto(battle);
+
+            return ResponseHandler.generateResponse("Successfully started a battle!", HttpStatus.CREATED, battleDto);
         } catch (EntityNotFoundException e) {
             String errorMessage = "Characters with IDs " + myCharacterId + " or " + opponentId + " not found.";
             return ResponseHandler.generateResponse(errorMessage, HttpStatus.NOT_FOUND, null);
         }
     }
 
-    @PostMapping("/{battleId}/attack")
-    public ResponseEntity<Object> performAttack(@PathVariable("battleId") Long battleId) {
+    @PostMapping("/{id}/attack")
+    public ResponseEntity<Object> performAttack(@PathVariable Long id) {
         try {
-            Battle battle = battleService.getBattleById(battleId);
+            Battle battle = battleService.getBattleById(id);
 
             if (battle == null || battle.getWinner() != null) {
-                String errorMessage = "Battle ID " + battleId + " not found or finished.";
+                String errorMessage = "Battle ID " + id + " not found or finished.";
                 return ResponseHandler.generateResponse(errorMessage, HttpStatus.NOT_FOUND, null);
             }
 
@@ -71,18 +79,18 @@ public class BattleController {
             return ResponseHandler.generateResponse("Successfully performed an Attack!",HttpStatus.OK, battleLog);
 
         } catch (EntityNotFoundException e) {
-            String errorMessage = "Battle ID " + battleId + " not found or finished.";
+            String errorMessage = "Battle ID " + id + " not found or finished.";
             return ResponseHandler.generateResponse(errorMessage, HttpStatus.NOT_FOUND, null);
         }
     }
 
-    @PostMapping("/{battleId}/defense")
-    public ResponseEntity<Object> performDefense(@PathVariable("battleId") Long battleId) {
+    @PostMapping("/{id}/defense")
+    public ResponseEntity<Object> performDefense(@PathVariable("id") Long id) {
         try {
-            Battle battle = battleService.getBattleById(battleId);
+            Battle battle = battleService.getBattleById(id);
 
             if (battle == null || battle.getWinner() != null) {
-                String errorMessage = "Battle ID " + battleId + " not found or finished.";
+                String errorMessage = "Battle ID " + id + " not found or finished.";
                 return ResponseHandler.generateResponse(errorMessage, HttpStatus.NOT_FOUND, null);
             }
 
@@ -90,18 +98,18 @@ public class BattleController {
             return ResponseHandler.generateResponse("Successfully performed a Defense!",HttpStatus.OK, battleLog);
 
         } catch (EntityNotFoundException e) {
-            String errorMessage = "Battle ID " + battleId + " not found or finished.";
+            String errorMessage = "Battle ID " + id + " not found or finished.";
             return ResponseHandler.generateResponse(errorMessage, HttpStatus.NOT_FOUND, null);
         }
     }
 
-    @PostMapping("/{battleId}/calculate-damage")
-    public ResponseEntity<Object> calculateDamage(@PathVariable("battleId") Long battleId) {
+    @PostMapping("/{id}/calculate-damage")
+    public ResponseEntity<Object> calculateDamage(@PathVariable("id") Long id) {
         try {
-            Battle battle = battleService.getBattleById(battleId);
+            Battle battle = battleService.getBattleById(id);
 
             if (battle == null || battle.getWinner() != null) {
-                String errorMessage = "Battle ID " + battleId + " not found or finished.";
+                String errorMessage = "Battle ID " + id + " not found or finished.";
                 return ResponseHandler.generateResponse(errorMessage, HttpStatus.NOT_FOUND, null);
             }
 
@@ -110,7 +118,7 @@ public class BattleController {
             return ResponseHandler.generateResponse("Successfully calculated the damage!",HttpStatus.OK, battleLog);
 
         } catch (EntityNotFoundException e) {
-            String errorMessage = "Battle ID " + battleId + " not found or finished.";
+            String errorMessage = "Battle ID " + id + " not found or finished.";
             return ResponseHandler.generateResponse(errorMessage, HttpStatus.NOT_FOUND, null);
 
         } catch (NullPointerException e) {

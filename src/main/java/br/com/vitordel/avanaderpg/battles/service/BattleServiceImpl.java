@@ -6,11 +6,13 @@ import br.com.vitordel.avanaderpg.battles.model.BattleLog;
 import br.com.vitordel.avanaderpg.battles.repository.BattleLogRepository;
 import br.com.vitordel.avanaderpg.battles.repository.BattleRepository;
 import br.com.vitordel.avanaderpg.characters.model.Character;
+import br.com.vitordel.avanaderpg.characters.model.CharacterCategory;
 import br.com.vitordel.avanaderpg.characters.service.CharacterService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -29,8 +31,8 @@ public class BattleServiceImpl implements BattleService{
     }
 
     @Override
-    public List<BattleLog> getBattleLogs(Long battleId) {
-        return battleLogRepository.findByBattleId(battleId);
+    public List<BattleLog> getBattleLogsByBattleId(Long battleId) {
+        return battleLogRepository.findByBattleIdOrderByTurn(battleId);
     }
 
     public Battle getBattleById(Long battleId) {
@@ -56,7 +58,7 @@ public class BattleServiceImpl implements BattleService{
                 opponentCharacter = characterService.getCharacterById(opponentId);
             } else {
                 List<Character> allCharacters = characterService.getAllCharacters();
-                opponentCharacter = getRandomOpponent(allCharacters, myCharacter);
+                opponentCharacter = getRandomMonsterOpponent(allCharacters, myCharacter);
             }
 
             if (opponentCharacter == null) {
@@ -115,11 +117,12 @@ public class BattleServiceImpl implements BattleService{
 
         BattleLog battleLog = battleLogRepository.findByBattleIdAndTurn(battle.getId(), battle.getTurn());
 
-        Long attack = attackRoll
+        Long attackResult = attackRoll
                 + battleLog.getCharacterAttacking().getStrength()
                 + battleLog.getCharacterAttacking().getAgility();
 
-        battleLog.setAttack(attack);
+        battleLog.setAttackRoll(attackRoll);
+        battleLog.setAttackResult(attackResult);
 
         return battleLogRepository.save(battleLog);
     }
@@ -130,10 +133,12 @@ public class BattleServiceImpl implements BattleService{
 
         BattleLog battleLog = battleLogRepository.findByBattleIdAndTurn(battle.getId(), battle.getTurn());
 
-        Long defense = defenseRoll
+        Long defenseResult = defenseRoll
                 + battleLog.getCharacterDefending().getDefense()
                 + battleLog.getCharacterDefending().getAgility();
-        battleLog.setDefense(defense);
+
+        battleLog.setDefenseRoll(defenseRoll);
+        battleLog.setDefenseResult(defenseResult);
 
         return battleLogRepository.save(battleLog);
     }
@@ -142,44 +147,72 @@ public class BattleServiceImpl implements BattleService{
     public BattleLog calculateDamage(Battle battle) {
         BattleLog battleLog = battleLogRepository.findByBattleIdAndTurn(battle.getId(), battle.getTurn());
 
-        if (battleLog.getAttack() == null || battleLog.getDefense() == null) {
-            throw new NullPointerException();
-        }
+        validateBattleLog(battleLog);
 
-        battle.setTurn(battle.getTurn()+1);
-        createBattleLog(battle);
-
-        if(battleLog.getAttack() <= battleLog.getDefense()) {
-            battleLog.setDamage(0L);
-            return battleLogRepository.save(battleLog);
-        }
-
-        Character character = battleLog.getCharacterAttacking();
-        long damageRoll = 0L;
-
-        for(int i = 0; i < character.getDiceQuantity(); i++) {
-            long roll = roll(battleLog.getCharacterAttacking().getDiceFaces());
-            damageRoll += roll;
-        }
-
-        long damage = battleLog.getAttack()
-                - battleLog.getDefense()
-                + battleLog.getCharacterAttacking().getStrength()
-                + damageRoll;
-
-        battleLog.setDamage(damage);
-
-        if(battle.getMainCharacter() == battleLog.getCharacterDefending()) {
-            battle.setMainCharacterLife(battle.getMainCharacterLife()-damage);
+        if (battleLog.getAttackResult() > battleLog.getDefenseResult()) {
+            calculateDamageAndApply(battle, battleLog);
         } else {
-            battle.setOpponentLife(battle.getOpponentLife()-damage);
-        }
-
-        if (battle.getMainCharacterLife() < 0 || battle.getOpponentLife() < 0) {
-            battle.setWinner(battleLog.getCharacterAttacking());
+            battle.setTurn(battle.getTurn() + 1);
+            createBattleLog(battle);
+            battleLog.setDamageRoll("[0]");
+            battleLog.setDamageResult(0L);
         }
 
         return battleLogRepository.save(battleLog);
+    }
+
+    private void validateBattleLog(BattleLog battleLog) {
+        if (battleLog.getAttackResult() == null || battleLog.getDefenseResult() == null) {
+            throw new NullPointerException();
+        }
+    }
+
+    private void calculateDamageAndApply(Battle battle, BattleLog battleLog) {
+        Character character = battleLog.getCharacterAttacking();
+        List<Long> damageRoll = calculateDamageRoll(character);
+
+        long damageResult = battleLog.getAttackResult()
+                - battleLog.getDefenseResult()
+                + character.getStrength();
+
+        for (Long roll : damageRoll) {
+            damageResult += roll;
+        }
+
+        battleLog.setDamageRoll(damageRoll.toString());
+        battleLog.setDamageResult(damageResult);
+
+        updateCharacterLife(battle, battleLog, damageResult);
+        updateBattleState(battle, battleLog);
+    }
+
+    private List<Long> calculateDamageRoll(Character character) {
+        List<Long> damageRoll = new ArrayList<>();
+
+        for (int i = 0; i < character.getDiceQuantity(); i++) {
+            long roll = roll(character.getDiceFaces());
+            damageRoll.add(roll);
+        }
+
+        return damageRoll;
+    }
+
+    private void updateCharacterLife(Battle battle, BattleLog battleLog, long damage) {
+        Character defender = battleLog.getCharacterDefending();
+        if (battle.getMainCharacter() == defender) {
+            battle.setMainCharacterLife(battle.getMainCharacterLife() - damage);
+        } else {
+            battle.setOpponentLife(battle.getOpponentLife() - damage);
+        }
+    }
+
+    private void updateBattleState(Battle battle, BattleLog battleLog) {
+        if (battle.getMainCharacterLife() < 0 || battle.getOpponentLife() < 0) {
+            battle.setWinner(battleLog.getCharacterAttacking());
+        } else {
+            battle.setTurn(battle.getTurn() + 1);
+            createBattleLog(battle);
+        }
     }
 
     private long roll(long n) {
@@ -187,10 +220,11 @@ public class BattleServiceImpl implements BattleService{
         return random.nextLong(n) + 1;
     }
 
-    private Character getRandomOpponent(List<Character> allCharacters, Character yourCharacter) {
+    private Character getRandomMonsterOpponent(List<Character> allCharacters, Character yourCharacter) {
 
         List<Character> potentialOpponents = allCharacters.stream()
-                .filter(character -> !character.equals(yourCharacter))
+                .filter(character -> character.getCategory()
+                        .equals(CharacterCategory.MONSTER) && !character.equals(yourCharacter))
                 .toList();
 
         if (potentialOpponents.isEmpty()) {
@@ -201,4 +235,5 @@ public class BattleServiceImpl implements BattleService{
         int randomIndex = random.nextInt(potentialOpponents.size());
         return potentialOpponents.get(randomIndex);
     }
+
 }

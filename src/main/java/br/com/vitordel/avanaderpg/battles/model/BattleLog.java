@@ -28,9 +28,21 @@ public class BattleLog {
     @Column(nullable = false)
     private Long turn;
 
-    private Long attack;
-    private Long defense;
-    private Long damage;
+    @Column(name = "attack_roll")
+    private Long attackRoll;
+    @Column(name = "attack_result")
+    private Long attackResult;
+
+    @Column(name = "defense_roll")
+    private Long defenseRoll;
+    @Column(name = "defense_result")
+    private Long defenseResult;
+
+    @Column(name = "damage_roll")
+    private String damageRoll;
+
+    @Column(name = "damage_result")
+    private Long damageResult;
 
     public BattleLog(Battle battle, Character characterAttacking, Character characterDefending, Long turn) {
         this.battle = battle;
