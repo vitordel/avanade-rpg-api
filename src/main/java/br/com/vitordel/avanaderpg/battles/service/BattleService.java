@@ -12,11 +12,8 @@ public interface BattleService {
     Battle getBattleById(Long battleId);
     List<BattleLog> getBattleLogsByBattleId(Long battleId);
     Battle startBattle(StartBattleDto startBattleDto);
-
     BattleLog createBattleLog(Battle battle);
-
     BattleLog performAttack(Battle battle);
     BattleLog performDefense(Battle battle);
-
     BattleLog calculateDamage(Battle battle);
 }
