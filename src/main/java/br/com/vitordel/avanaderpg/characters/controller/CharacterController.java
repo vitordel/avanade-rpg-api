@@ -1,9 +1,12 @@
 package br.com.vitordel.avanaderpg.characters.controller;
 
+import br.com.vitordel.avanaderpg.characters.dto.CharacterDto;
 import br.com.vitordel.avanaderpg.characters.model.Character;
 import br.com.vitordel.avanaderpg.characters.model.CharacterCategory;
 import br.com.vitordel.avanaderpg.characters.service.CharacterService;
+import br.com.vitordel.avanaderpg.response.ResponseHandler;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,16 +23,16 @@ public class CharacterController {
     private final CharacterService characterService;
 
     @GetMapping()
-    public ResponseEntity<List<Character>> getAllCharacters() {
+    public ResponseEntity<Object> getAllCharacters() {
         List<Character> characters = characterService.getAllCharacters();
-        return ResponseEntity.ok(characters);
+        return ResponseHandler.generateResponse("Successfully retrieved the characters!", HttpStatus.OK, characters);
     }
 
     @GetMapping("/category/{category}")
-    public ResponseEntity<?> getCharacterByCategory(@PathVariable("category") String category) {
+    public ResponseEntity<Object> getCharacterByCategory(@PathVariable("category") String category) {
         try {
             List<Character> characters = characterService.getCharactersByCategory(category);
-            return ResponseEntity.ok(characters);
+            return ResponseHandler.generateResponse("Successfully retrieved the characters!", HttpStatus.OK, characters);
         } catch (IllegalArgumentException e) {
             CharacterCategory[] availableCategories = CharacterCategory.values();
             String errorMessage = "Invalid category: " + category +
@@ -39,18 +42,20 @@ public class CharacterController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getCharacterById(@PathVariable("id") Long id) {
+    public ResponseEntity<Object> getCharacterById(@PathVariable("id") Long id) {
         try {
             Character character = characterService.getCharacterById(id);
-            return ResponseEntity.ok(character);
+            return ResponseHandler.generateResponse("Successfully retrieved the character!", HttpStatus.OK, character);
+
         } catch (EntityNotFoundException e) {
             String errorMessage = "Character with ID " + id + " not found.";
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+            return ResponseHandler.generateResponse(errorMessage, HttpStatus.NOT_FOUND, null);
         }
     }
 
     @PostMapping()
-    public ResponseEntity<?> createCharacter(@RequestBody Character character) {
+    public ResponseEntity<Character> createCharacter(@Valid @RequestBody CharacterDto characterDto) {
+        Character character = new Character(characterDto);
         Character createdCharacter = characterService.createCharacter(character);
         return new ResponseEntity<>(createdCharacter, HttpStatus.CREATED);
     }

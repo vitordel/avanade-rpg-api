@@ -1,7 +1,6 @@
 package br.com.vitordel.avanaderpg.characters.dto;
 
-import br.com.vitordel.avanaderpg.characters.model.CharacterCategory;
-import br.com.vitordel.avanaderpg.characters.validators.ValidCharacterCategory;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,28 +11,27 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CharacterDto {
 
-    @ValidCharacterCategory
     @NotEmpty(message = "The category is required")
-    private CharacterCategory category;
+    private String category;
 
     @NotEmpty(message = "The species is required")
     private String species;
 
-    @NotEmpty(message = "The life is required")
+    @Min(value = 1, message = "Life must be at least 1")
     private Long life;
 
-    @NotEmpty(message = "The strength is required")
+    @Min(value = 1, message = "Strength must be at least 1")
     private Long strength;
 
-    @NotEmpty(message = "The defense is required")
+    @Min(value = 1, message = "Defense must be at least 1")
     private Long defense;
 
-    @NotEmpty(message = "The agility is required")
+    @Min(value = 1, message = "Agility must be at least 1")
     private Long agility;
 
-    @NotEmpty(message = "The dice_quantity is required")
-    private Long dice_quantity;
+    @Min(value = 1, message = "Dice quantity must be at least 1")
+    private Long diceQuantity;
 
-    @NotEmpty(message = "The dice_faces is required")
-    private Long dice_faces;
+    @Min(value = 1, message = "Dice faces must be at least 1")
+    private Long diceFaces;
 }

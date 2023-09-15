@@ -1,5 +1,8 @@
 package br.com.vitordel.avanaderpg.characters.model;
 
+import br.com.vitordel.avanaderpg.characters.dto.CharacterDto;
+import br.com.vitordel.avanaderpg.characters.validators.CharacterCategoryValidator;
+import br.com.vitordel.avanaderpg.exceptions.InvalidCharacterCategoryException;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -13,7 +16,6 @@ public class Character {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private CharacterCategory category;
-
 
     public void setCategory(String category) {
         this.category = CharacterCategory.valueOf(category.toUpperCase());
@@ -39,4 +41,24 @@ public class Character {
 
     @Column(name = "dice_faces", nullable = false)
     private Long diceFaces;
+
+    public Character(CharacterDto characterDto) {
+        CharacterCategoryValidator validator = new CharacterCategoryValidator();
+        if (!isValidCategory(characterDto.getCategory())) {
+            throw new InvalidCharacterCategoryException("Invalid character category");
+        }
+
+        this.category = CharacterCategory.valueOf(characterDto.getCategory().toUpperCase());
+        this.species = characterDto.getSpecies();
+        this.life = characterDto.getLife();
+        this.strength = characterDto.getStrength();
+        this.defense = characterDto.getDefense();
+        this.agility = characterDto.getAgility();
+        this.diceQuantity = characterDto.getDiceQuantity();
+        this.diceFaces = characterDto.getDiceFaces();
+    }
+
+    private boolean isValidCategory(String category) {
+        return "HERO".equalsIgnoreCase(category) || "MONSTER".equalsIgnoreCase(category);
+    }
 }
