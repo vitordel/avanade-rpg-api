@@ -1,24 +1,101 @@
 # Projeto para Desafio Avanade/Ada Tech
 
-### Descrição
+## Descrição
 
-- Junte-se à batalha épica estilo Advanced Dangeous & Dragons (AD&D) !! 
-- Nos ajude a criar a melhor API Rest usando Java SpringBoot com banco de dados Postgres.
+- Junte-se à batalha épica estilo Advanced Dungeons & Dragons (AD&D) 
 - O jogo, como todo bom RPG (Role Playing Game), será duelado em turnos.
-- Escolha o seu nome e personagem favorito (herói ou monstro).
+- Escolha o seu Personagem Favorito (herói ou monstro).
 - O seu oponente sempre será um monstro, você pode escolher ou deixar aleatório.
-- Sim, também teremos que “jogar” dados.
 
-### Algumas regras:
-- Ao iniciar, será necessário escolher um personagem (herói ou monstro);
-- Cada personagem tem seus atributos únicos. Escolha com calma o seu personagem;
-- Os personagens possuem Pontos de Vida (PV);
-- Se um personagem ficar com PV igual ou abaixo de zero então o oponente será o vencedor;
-- O dano causado por um ataque depende da força do atacante e da defesa do defensor, enquanto o dano recebido depende da força do atacante e da resistência do defensor e da eficácia de sua defesa;
-- Banco de Dados Postgres;
-- Necessário criar o CRUD (Create, Read, Update e Delete) de cadastro de Personagem;
+## Configuração do Ambiente
+
+Antes de começar, você deve configurar seu ambiente de desenvolvimento:
+
+1. **Java**: Certifique-se de ter o Java JDK instalado na sua máquina.
+
+2. **PostgreSQL**: Instale o PostgreSQL e configure uma base de dados para a aplicação.
+
+3. **Gradel**: Instale o Gradel para gerenciar as dependências e compilar o projeto.
+
+## Configuração da Base de Dados
+
+1. Crie uma base de dados PostgreSQL chamada `rpg_api`.
+
+2. Atualize as configurações de conexão com o banco de dados no arquivo `application.properties` no projeto Spring Boot.
+
+   ```properties
+   spring.datasource.url=jdbc:postgresql://localhost:5432/rpg_database
+   spring.datasource.username=seu_usuario
+   spring.datasource.password=sua_senha
+   ```
+
+## Executando a Aplicação
+
+1. Clone este repositório para a sua máquina.
+2. Abra um terminal na pasta raiz do projeto e execute o seguinte comando:
+
+     ```
+     gradle bootRun
+     ```
+     *Isso iniciará o servidor Spring Boot.*
+
+
+3. Acesse a API da aplicação em http://localhost:8080.
+4. 
+
+## Endpoints da API
+A aplicação oferece os seguintes endpoints da API:
 
 ### Personagens
+- GET /characters: Obtém todos os personagens.
+- GET /characters/{id}: Obtém um personagem pelo ID.
+- GET /characters/category/{category}: Obtém personagens por categoria.
+- POST /characters: Cria um novo personagem.
+- PUT /characters/{id}: Atualiza um personagem pelo ID.
+- DELETE /characters/{id}: Exclui um personagem pelo ID.
+
+### Batalhas
+- GET /battles: Obtém todas as batalhas.
+- GET /battles/{id}/history: Obtém o histórico de uma batalha pelo ID.
+- POST /battles/start: Inicia uma nova batalha.
+- POST /battles/{id}/attack: Realiza um ataque em uma batalha.
+- POST /battles/{id}/defense: Realiza uma defesa em uma batalha.
+- POST /battles/{id}/calculate-damage: Calcula o dano em uma batalha.
+
+### Exemplo de Uso da Aplicação
+
+Obter todos os personagens:
+```
+ GET http://localhost:8080/characters
+```
+Criar um novo personagem:
+```
+ POST http://localhost:8080/characters
+ 
+ Body:
+   {
+   "name": "Nome do Personagem",
+   "category": "HERO",
+   "species": "Mage",
+   "life": 100,
+   "strength": 50,
+   "defense": 30,
+   "agility": 40,
+   "diceQuantity": 2,
+   "diceFaces": 12
+   }
+```
+Iniciar uma nova batalha:
+```
+POST http://localhost:8080/battles/start
+
+Body:
+{
+    "myCharacterId": 1,
+    "opponentId": 2
+}
+```
+### Exemplo de Personagens
 
 | Heros     | Life | Strength | Defense | Agility | Number of Dices | Dice Faces | 
 |-----------|------|----------|---------|---------|-----------------|------------|
@@ -32,7 +109,8 @@
 | Giant    | 34   | 10       | 4       | 4       | 2               | 6          |
 | Werewolf | 34   | 7        | 4       | 7       | 2               | 4          |
 
-### Dados
+### Dados do Jogo
+
 - Os dados em jogos de RPG podem ter diferentes números de faces, indicado pelo número após a letra "d". Por
 exemplo, 1d12 indica que você deve jogar um dado de 12 faces, ou seja, o resultado será um número aleatório entre
 1 e 12.
@@ -79,24 +157,6 @@ número aleatório entre 2 e 40.
    - O personagem que ficar com zero ou menos de PV então a luta terminará instantaneamente.
 
 
-#### 5) Fim do turno
+#### 5) Fim do turno e Fim do Jogo ou Não
    - Se no fim do turno nenhum personagem ficou com zero ou menos PV então a luta continua e o próximo turno se inicia
    imediatamente
-
-
-#### 6) Histórico
-   - Todos os detalhes das batalhas deverão ser salvas em tabela de LOG para futura conferência.
-   - Dados: qual heroi, qual monstro, quem iniciou a batalha, dados de cada turno (número do turno, dado de ataque, defesa,
-   dano, etc)
-
-
-#### 7) Endpoints
-   - Todos referentes ao CRUD de Personagem (Create, Read, Update e Delete)
-   - Você é livre para criar os endpoints, porém esperamos ao menos alguns deles, tais como:
-   - Ataque
-   - Defesa
-   - Cálculo do dano
-   - Histórico
-
-#### 9) Readme
-   Uma boa API Rest sempre possui um arquivo Readme bem escrito.
