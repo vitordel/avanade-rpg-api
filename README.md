@@ -24,7 +24,7 @@ Antes de começar, você deve configurar seu ambiente de desenvolvimento:
 2. Atualize as configurações de conexão com o banco de dados no arquivo `application.properties` no projeto Spring Boot.
 
    ```properties
-   spring.datasource.url=jdbc:postgresql://localhost:5432/rpg_database
+   spring.datasource.url=jdbc:postgresql://localhost:5432/rpg_api
    spring.datasource.username=seu_usuario
    spring.datasource.password=sua_senha
    ```
