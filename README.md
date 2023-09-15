@@ -58,9 +58,9 @@ A aplicação oferece os seguintes endpoints da API:
 - GET /battles: Obtém todas as batalhas.
 - GET /battles/{id}/history: Obtém o histórico de uma batalha pelo ID.
 - POST /battles/start: Inicia uma nova batalha.
-- POST /battles/{id}/attack: Realiza um ataque em uma batalha.
-- POST /battles/{id}/defense: Realiza uma defesa em uma batalha.
-- POST /battles/{id}/calculate-damage: Calcula o dano em uma batalha.
+- POST /battles/{id}/attack: Realiza um ataque em um turno de uma batalha.
+- POST /battles/{id}/defense: Realiza uma defesa em um turno de uma batalha.
+- POST /battles/{id}/calculate-damage: Calcula o dano em um turno de uma batalha.
 
 ### Exemplo de Uso da Aplicação
 
