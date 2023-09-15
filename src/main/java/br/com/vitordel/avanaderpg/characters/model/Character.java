@@ -3,12 +3,14 @@ package br.com.vitordel.avanaderpg.characters.model;
 import br.com.vitordel.avanaderpg.characters.dto.CharacterDto;
 import br.com.vitordel.avanaderpg.exceptions.InvalidCharacterCategoryException;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @Entity(name = "characters")
 @NoArgsConstructor
+@AllArgsConstructor
 public class Character {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
