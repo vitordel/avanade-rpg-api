@@ -1,13 +1,14 @@
 package br.com.vitordel.avanaderpg.characters.model;
 
 import br.com.vitordel.avanaderpg.characters.dto.CharacterDto;
-import br.com.vitordel.avanaderpg.characters.validators.CharacterCategoryValidator;
 import br.com.vitordel.avanaderpg.exceptions.InvalidCharacterCategoryException;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Entity(name = "characters")
+@NoArgsConstructor
 public class Character {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,7 +44,6 @@ public class Character {
     private Long diceFaces;
 
     public Character(CharacterDto characterDto) {
-        CharacterCategoryValidator validator = new CharacterCategoryValidator();
         if (!isValidCategory(characterDto.getCategory())) {
             throw new InvalidCharacterCategoryException("Invalid character category");
         }
@@ -59,6 +59,11 @@ public class Character {
     }
 
     private boolean isValidCategory(String category) {
-        return "HERO".equalsIgnoreCase(category) || "MONSTER".equalsIgnoreCase(category);
+        try {
+            CharacterCategory.valueOf(category.toUpperCase());
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 }

@@ -1,6 +1,7 @@
 package br.com.vitordel.avanaderpg.characters.controller;
 
 import br.com.vitordel.avanaderpg.characters.dto.CharacterDto;
+import br.com.vitordel.avanaderpg.characters.dto.UpdateCharacterDto;
 import br.com.vitordel.avanaderpg.characters.model.Character;
 import br.com.vitordel.avanaderpg.characters.model.CharacterCategory;
 import br.com.vitordel.avanaderpg.characters.service.CharacterService;
@@ -37,7 +38,8 @@ public class CharacterController {
             CharacterCategory[] availableCategories = CharacterCategory.values();
             String errorMessage = "Invalid category: " + category +
                     ". Available categories: " + Arrays.toString(availableCategories);
-            return ResponseEntity.badRequest().body(errorMessage);
+            return ResponseHandler.generateResponse(errorMessage, HttpStatus.BAD_REQUEST, null);
+
         }
     }
 
@@ -54,32 +56,32 @@ public class CharacterController {
     }
 
     @PostMapping()
-    public ResponseEntity<Character> createCharacter(@Valid @RequestBody CharacterDto characterDto) {
+    public ResponseEntity<Object> createCharacter(@Valid @RequestBody CharacterDto characterDto) {
         Character character = new Character(characterDto);
         Character createdCharacter = characterService.createCharacter(character);
-        return new ResponseEntity<>(createdCharacter, HttpStatus.CREATED);
+        return ResponseHandler.generateResponse("Successfully created the character!", HttpStatus.CREATED, createdCharacter);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateCharacter(@PathVariable Long id, @RequestBody Character character) {
+    public ResponseEntity<Object> updateCharacter(@PathVariable Long id, @RequestBody UpdateCharacterDto updateCharacterDto) {
         try {
-            Character updatedCharacter = characterService.updateCharacter(id, character);
-            return new ResponseEntity<>(updatedCharacter, HttpStatus.OK);
+            Character updatedCharacter = characterService.updateCharacter(id, updateCharacterDto);
+            return ResponseHandler.generateResponse("Successfully updated the character!", HttpStatus.OK, updatedCharacter);
         } catch (EntityNotFoundException e) {
             String errorMessage = "Character with ID " + id + " not found.";
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+            return ResponseHandler.generateResponse(errorMessage, HttpStatus.NOT_FOUND, null);
         }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteCharacter(@PathVariable Long id) {
+    public ResponseEntity<Object> deleteCharacter(@PathVariable Long id) {
         try {
             Character existingCharacter = characterService.getCharacterById(id);
             characterService.deleteCharacter(id);
-            return ResponseEntity.ok(existingCharacter);
+            return ResponseHandler.generateResponse("Successfully deleted the character!", HttpStatus.OK, existingCharacter);
         } catch (EntityNotFoundException e) {
             String errorMessage = "Character with ID " + id + " not found.";
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+            return ResponseHandler.generateResponse(errorMessage, HttpStatus.NOT_FOUND, null);
         }
     }
 }

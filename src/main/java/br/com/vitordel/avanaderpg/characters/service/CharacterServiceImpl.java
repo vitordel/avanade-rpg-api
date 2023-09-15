@@ -1,6 +1,7 @@
 package br.com.vitordel.avanaderpg.characters.service;
 
 
+import br.com.vitordel.avanaderpg.characters.dto.UpdateCharacterDto;
 import br.com.vitordel.avanaderpg.characters.model.Character;
 import br.com.vitordel.avanaderpg.characters.model.CharacterCategory;
 import br.com.vitordel.avanaderpg.characters.repository.CharacterRepository;
@@ -48,21 +49,36 @@ public class CharacterServiceImpl implements CharacterService{
     }
 
     @Override
-    public Character updateCharacter(Long id, Character updatedCharacter) {
-        Character existingCharacter = getCharacterById(id);
-        if (existingCharacter != null) {
-            existingCharacter.setCategory(String.valueOf(updatedCharacter.getCategory()));
-            existingCharacter.setSpecies(updatedCharacter.getSpecies());
-            existingCharacter.setLife(updatedCharacter.getLife());
-            existingCharacter.setStrength(updatedCharacter.getStrength());
-            existingCharacter.setDefense(updatedCharacter.getDefense());
-            existingCharacter.setAgility(updatedCharacter.getAgility());
-            existingCharacter.setDiceQuantity(updatedCharacter.getDiceQuantity());
-            existingCharacter.setDiceFaces(updatedCharacter.getDiceFaces());
+    public Character updateCharacter(Long id, UpdateCharacterDto updateCharacterDto) {
 
-            return characterRepository.save(existingCharacter);
+        Character existingCharacter = getCharacterById(id);
+        if (updateCharacterDto.getCategory() != null && isValidCategory(updateCharacterDto.getCategory())) {
+            existingCharacter.setCategory(updateCharacterDto.getCategory().toUpperCase());
         }
-        return null;
+        if (updateCharacterDto.getSpecies() != null) {
+            existingCharacter.setSpecies(updateCharacterDto.getSpecies());
+        }
+        if (updateCharacterDto.getLife() != null && updateCharacterDto.getLife() > 0) {
+            existingCharacter.setLife(updateCharacterDto.getLife());
+        }
+        if (updateCharacterDto.getStrength() != null && updateCharacterDto.getStrength() > 0) {
+            existingCharacter.setStrength(updateCharacterDto.getStrength());
+        }
+        if (updateCharacterDto.getDefense() != null && updateCharacterDto.getDefense() > 0) {
+            existingCharacter.setDefense(updateCharacterDto.getDefense());
+        }
+        if (updateCharacterDto.getAgility() != null && updateCharacterDto.getAgility() > 0) {
+            existingCharacter.setAgility(updateCharacterDto.getAgility());
+        }
+        if (updateCharacterDto.getDiceQuantity() != null && updateCharacterDto.getDiceQuantity() > 0) {
+            existingCharacter.setDiceQuantity(updateCharacterDto.getDiceQuantity());
+        }
+        if (updateCharacterDto.getDiceFaces() != null && updateCharacterDto.getDiceFaces() > 0) {
+            existingCharacter.setDiceFaces(updateCharacterDto.getDiceFaces());
+        }
+
+        return characterRepository.save(existingCharacter);
+
     }
 
     @Override
@@ -77,6 +93,15 @@ public class CharacterServiceImpl implements CharacterService{
             return CharacterCategory.valueOf(category.toUpperCase());
         } catch (IllegalArgumentException | NullPointerException e) {
             return null;
+        }
+    }
+
+    private boolean isValidCategory(String category) {
+        try {
+            CharacterCategory.valueOf(category.toUpperCase());
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
         }
     }
 }
